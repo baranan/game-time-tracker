@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#d9828b">
+    <title>זמן המשחק שלי</title>
+    <link rel="stylesheet" href="css/styles.css">
+  </head>
+  <body>
+    <header class="hero">
+      <div class="hero__inner">
+        <div>
+          <p class="eyebrow">השבוע שלי</p>
+          <h1>זמן המשחק שלי 🎮</h1>
+          <p id="week-range" class="week-range"></p>
+          <nav class="week-navigation" aria-label="ניווט בין שבועות">
+            <button id="previous-week" class="week-nav-button" type="button">← השבוע הקודם</button>
+            <button id="current-week" class="week-nav-button hidden" type="button">השבוע הנוכחי</button>
+            <button id="next-week" class="week-nav-button" type="button">השבוע הבא →</button>
+          </nav>
+        </div>
+        <div id="mode-badge" class="mode-badge" aria-live="polite"></div>
+      </div>
+    </header>
+
+    <main class="layout">
+      <section id="loading" class="card loading">טוען נתונים…</section>
+      <section id="error-panel" class="card error-panel hidden" role="alert"></section>
+
+      <div id="app-content" class="hidden">
+        <section class="summary-grid" aria-label="סיכום שבועי">
+          <article class="card allowance-card">
+            <div class="ring" id="progress-ring">
+              <div class="ring__center">
+                <strong id="remaining-time"></strong>
+                <span>נותרו השבוע</span>
+              </div>
+            </div>
+            <div class="allowance-copy">
+              <h2 id="weekly-status-title"></h2>
+              <p id="used-time"></p>
+              <p id="limit-detail" class="muted"></p>
+            </div>
+          </article>
+
+          <article class="card today-card">
+            <span class="today-card__icon">☀️</span>
+            <div>
+              <p id="period-label" class="eyebrow">היום</p>
+              <h2 id="today-status"></h2>
+              <p id="today-detail" class="muted"></p>
+            </div>
+          </article>
+        </section>
+
+        <section id="violations-panel" class="card violations hidden" aria-live="polite">
+          <h2>צריך לשים לב</h2>
+          <ul id="violations-list"></ul>
+        </section>
+
+        <section id="parent-panel" class="card parent-panel hidden">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">כלי הורים</p>
+              <h2 id="form-title">הוספת זמן משחק</h2>
+            </div>
+            <button id="cancel-edit" class="button button--ghost hidden" type="button">ביטול עריכה</button>
+          </div>
+
+          <form id="session-form" class="session-form">
+            <input id="session-id" type="hidden">
+            <label>
+              התחלה
+              <input id="start-time" type="datetime-local" required>
+            </label>
+            <label>
+              סיום
+              <input id="end-time" type="datetime-local" required>
+            </label>
+            <label class="note-field">
+              הערה (לא חובה)
+              <input id="session-note" type="text" maxlength="80" placeholder="למשל: משחק עם חברים">
+            </label>
+            <button id="session-submit" class="button button--primary" type="submit">שמירה</button>
+          </form>
+          <p id="form-message" class="form-message" role="status"></p>
+
+          <div class="adjustment-box">
+            <div>
+              <h3>שינוי המכסה של השבוע</h3>
+              <p class="muted">מספר חיובי מוסיף זמן; מספר שלילי מפחית.</p>
+            </div>
+            <form id="adjustment-form" class="adjustment-form">
+              <label>
+                שינוי בדקות
+                <input id="adjustment-minutes" type="number" step="5" min="-300" max="600" value="0">
+              </label>
+              <button id="adjustment-submit" class="button button--secondary" type="submit">עדכון מכסה</button>
+            </form>
+          </div>
+        </section>
+
+        <section class="card history-card">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">יומן</p>
+              <h2>היסטוריית משחק</h2>
+            </div>
+            <span id="session-count" class="count-pill"></span>
+          </div>
+          <div id="history-list" class="history-list"></div>
+        </section>
+      </div>
+    </main>
+
+    <dialog id="delete-dialog">
+      <form method="dialog" class="dialog-card">
+        <h2>למחוק את הרשומה?</h2>
+        <p>לא ניתן לבטל את הפעולה.</p>
+        <div class="dialog-actions">
+          <button value="cancel" class="button button--ghost">ביטול</button>
+          <button id="confirm-delete" value="confirm" class="button button--danger">מחיקה</button>
+        </div>
+      </form>
+    </dialog>
+
+    <script type="module" src="js/app.js"></script>
+  </body>
+</html>
