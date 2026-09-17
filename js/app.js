@@ -1,5 +1,6 @@
 import { LocalAdapter } from "./adapters/local-adapter.js";
 import { GoogleSheetsAdapter } from "./adapters/google-sheets-adapter.js";
+import { formatClock, parseLocalDateTime, toDateInput, toTimeInput } from "./date-time.js";
 import { evaluateWeek, getWeekStart, localDateKey, weekKey } from "./rules.js";
 
 const MAX_ENTRY_MINUTES = 5 * 60;
@@ -16,7 +17,7 @@ const elements = Object.fromEntries([
   "loading", "error-panel", "app-content", "week-range", "mode-badge", "remaining-time",
   "weekly-status-title", "used-time", "limit-detail", "progress-ring", "today-status",
   "today-detail", "violations-panel", "violations-list", "parent-panel", "session-form",
-  "session-id", "start-time", "end-time", "session-note", "form-title", "cancel-edit",
+  "session-id", "start-date", "start-time", "end-date", "end-time", "session-note", "form-title", "cancel-edit",
   "form-message", "session-submit", "adjustment-form", "adjustment-minutes", "adjustment-submit", "history-list", "session-count",
   "delete-dialog", "confirm-delete", "previous-week", "current-week", "next-week", "period-label",
 ].map((id) => [id, document.getElementById(id)]));
@@ -165,9 +166,9 @@ function makeButton(label, className, handler) {
 // Shows the entry immediately, then rolls it back if remote persistence fails.
 async function handleSessionSubmit(event) {
   event.preventDefault();
-  const start = new Date(elements["start-time"].value);
-  const end = new Date(elements["end-time"].value);
-  if (!Number.isFinite(start.getTime()) || !Number.isFinite(end.getTime()) || end <= start) {
+  const start = parseLocalDateTime(elements["start-date"].value, elements["start-time"].value);
+  const end = parseLocalDateTime(elements["end-date"].value, elements["end-time"].value);
+  if (!start || !end || end <= start) {
     showFormMessage("שעת הסיום חייבת להיות אחרי שעת ההתחלה.", true);
     return;
   }
@@ -236,6 +237,12 @@ async function handleAdjustmentSubmit(event) {
 
   try {
     await adapter.setWeeklyAdjustment(key, updatedAdjustment);
+    const persistedData = await adapter.load();
+    const persistedAdjustment = Number(persistedData.weeklyAdjustments?.[key] ?? 0);
+    if (persistedAdjustment !== updatedAdjustment) {
+      throw new Error("השינוי לא נמצא לאחר טעינה חוזרת מהאחסון.");
+    }
+    state.data = persistedData;
     elements["adjustment-minutes"].value = 0;
     showFormMessage(`המכסה עודכנה. השינוי המצטבר הוא ${formatSignedMinutes(updatedAdjustment)}.`);
   } catch (error) {
@@ -256,8 +263,8 @@ function setAdjustmentSaving(isSaving) {
 
 function beginEdit(session) {
   elements["session-id"].value = session.id;
-  elements["start-time"].value = toDateTimeLocal(new Date(session.start));
-  elements["end-time"].value = toDateTimeLocal(new Date(session.end));
+  setDateTimeFields("start", new Date(session.start));
+  setDateTimeFields("end", new Date(session.end));
   elements["session-note"].value = session.note ?? "";
   elements["form-title"].textContent = "עריכת זמן משחק";
   elements["cancel-edit"].classList.remove("hidden");
@@ -276,8 +283,18 @@ function setDefaultTimes() {
   const end = new Date(state.referenceDate);
   end.setSeconds(0, 0);
   const start = new Date(end.getTime() - 60 * 60000);
-  elements["start-time"].value = toDateTimeLocal(start);
-  elements["end-time"].value = toDateTimeLocal(end);
+  setDateTimeFields("start", start);
+  setDateTimeFields("end", end);
+}
+
+function setDateTimeFields(prefix, date) {
+  elements[`${prefix}-date`].value = toDateInput(date);
+  elements[`${prefix}-time`].value = toTimeInput(date);
+}
+
+function matchSessionDates(sourcePrefix, targetPrefix) {
+  const date = elements[`${sourcePrefix}-date`].value;
+  if (date) elements[`${targetPrefix}-date`].value = date;
 }
 
 function bindEvents() {
@@ -285,6 +302,8 @@ function bindEvents() {
   elements["next-week"].addEventListener("click", () => changeWeek(1));
   elements["current-week"].addEventListener("click", selectCurrentWeek);
   if (isParent) {
+    elements["start-date"].addEventListener("change", () => matchSessionDates("start", "end"));
+    elements["end-date"].addEventListener("change", () => matchSessionDates("end", "start"));
     elements["session-form"].addEventListener("submit", handleSessionSubmit);
     elements["adjustment-form"].addEventListener("submit", handleAdjustmentSubmit);
     elements["cancel-edit"].addEventListener("click", resetForm);
@@ -353,10 +372,6 @@ function formatSignedMinutes(minutes) {
 
 function formatDate(date) {
   return new Intl.DateTimeFormat("he-IL", { day: "numeric", month: "numeric" }).format(date);
-}
-
-function formatClock(date) {
-  return new Intl.DateTimeFormat("he-IL", { hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).format(date);
 }
 
 function toDateTimeLocal(date) {

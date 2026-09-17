@@ -18,7 +18,8 @@ class MemoryStorage {
 }
 
 // Exercises the same CRUD interface that the future Google adapter implements.
-const adapter = new LocalAdapter(new MemoryStorage());
+const storage = new MemoryStorage();
+const adapter = new LocalAdapter(storage);
 const initial = await adapter.load();
 assert.ok(Array.isArray(initial.sessions));
 assert.ok(new Set(initial.sessions.map((item) => weekKey(new Date(item.start)))).size >= 2);
@@ -33,6 +34,7 @@ assert.equal((await adapter.load()).sessions.find((item) => item.id === "test").
 
 await adapter.setWeeklyAdjustment("2026-08-30", 45);
 assert.equal((await adapter.load()).weeklyAdjustments["2026-08-30"], 45);
+assert.equal((await new LocalAdapter(storage).load()).weeklyAdjustments["2026-08-30"], 45);
 
 await adapter.deleteSession("test");
 assert.equal((await adapter.load()).sessions.some((item) => item.id === "test"), false);
