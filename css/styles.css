@@ -155,10 +155,28 @@ h3 { margin-bottom: 4px; }
 .parent-panel { background: #d4e6df; }
 .history-card { background: #fff0c8; }
 
-.session-form { display: grid; grid-template-columns: 1fr 1fr 1.25fr auto; align-items: end; gap: 9px; }
+.session-form { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto auto; align-items: start; gap: 9px; }
 label { display: grid; gap: 6px; color: var(--ink); font-size: .87rem; font-weight: 700; }
+.date-time-field { display: grid; gap: 6px; align-self: stretch; color: var(--ink); font-size: .87rem; font-weight: 700; }
 .date-time-inputs { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(78px, .75fr); gap: 6px; }
 .clock-input { text-align: center; }
+.quick-time-buttons { display: flex; flex-wrap: wrap; gap: 4px; }
+.quick-time-button {
+  min-height: 25px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 2px 7px;
+  color: var(--primary-dark);
+  background: var(--cream);
+  font-size: .68rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+.quick-time-button:hover { background: var(--yellow); }
+.quick-time-button:focus-visible { outline: 3px solid rgb(229 183 74 / 48%); outline-offset: 1px; }
+.note-toggle { white-space: nowrap; }
+.note-toggle, #session-submit { margin-top: 26px; }
+.note-field { grid-column: 1 / -1; }
 input {
   width: 100%;
   min-height: 40px;
@@ -226,6 +244,7 @@ dialog::backdrop { background: rgb(24 21 55 / 50%); }
   .session-form { grid-template-columns: 1fr 1fr; }
   .note-field { grid-column: 1 / -1; }
   .session-form .button { grid-column: 1 / -1; }
+  .note-toggle, #session-submit { margin-top: 0; }
   .adjustment-box { align-items: stretch; flex-direction: column; }
   .history-item { grid-template-columns: 1fr auto; }
   .history-duration { grid-column: 1; }

@@ -70,25 +70,37 @@
 
           <form id="session-form" class="session-form">
             <input id="session-id" type="hidden">
-            <label class="date-time-field">
+            <div class="date-time-field">
               <span>התחלה</span>
               <span class="date-time-inputs">
                 <input id="start-date" type="date" aria-label="תאריך התחלה" required>
                 <input id="start-time" class="clock-input" type="text" inputmode="numeric" autocomplete="off" placeholder="HH:MM" pattern="(?:[01][0-9]|2[0-3]):[0-5][0-9]" maxlength="5" aria-label="שעת התחלה בפורמט 24 שעות" required dir="ltr">
               </span>
-            </label>
-            <label class="date-time-field">
+              <span class="quick-time-buttons" role="group" aria-label="בחירת שעת התחלה מהירה">
+                <button class="quick-time-button" type="button" data-time-target="start" data-offset-minutes="0">עכשיו</button>
+                <button class="quick-time-button" type="button" data-time-target="start" data-offset-minutes="-30">לפני חצי שעה</button>
+                <button class="quick-time-button" type="button" data-time-target="start" data-offset-minutes="-60">לפני שעה</button>
+              </span>
+            </div>
+            <div class="date-time-field">
               <span>סיום</span>
               <span class="date-time-inputs">
                 <input id="end-date" type="date" aria-label="תאריך סיום" required>
                 <input id="end-time" class="clock-input" type="text" inputmode="numeric" autocomplete="off" placeholder="HH:MM" pattern="(?:[01][0-9]|2[0-3]):[0-5][0-9]" maxlength="5" aria-label="שעת סיום בפורמט 24 שעות" required dir="ltr">
               </span>
-            </label>
-            <label class="note-field">
+              <span class="quick-time-buttons" role="group" aria-label="בחירת שעת סיום מהירה">
+                <button class="quick-time-button" type="button" data-time-target="end" data-offset-minutes="-30">לפני חצי שעה</button>
+                <button class="quick-time-button" type="button" data-time-target="end" data-offset-minutes="0">עכשיו</button>
+                <button class="quick-time-button" type="button" data-time-target="end" data-offset-minutes="30">עוד חצי שעה</button>
+                <button class="quick-time-button" type="button" data-time-target="end" data-offset-minutes="60">עוד שעה</button>
+              </span>
+            </div>
+            <button id="note-toggle" class="button button--ghost note-toggle" type="button" aria-expanded="false" aria-controls="session-note-field">הערה</button>
+            <button id="session-submit" class="button button--primary" type="submit">שמירה</button>
+            <label id="session-note-field" class="note-field hidden">
               הערה (לא חובה)
               <input id="session-note" type="text" maxlength="80" placeholder="למשל: משחק עם חברים">
             </label>
-            <button id="session-submit" class="button button--primary" type="submit">שמירה</button>
           </form>
           <p id="form-message" class="form-message" role="status"></p>
 

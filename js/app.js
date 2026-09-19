@@ -17,7 +17,7 @@ const elements = Object.fromEntries([
   "loading", "error-panel", "app-content", "week-range", "mode-badge", "remaining-time",
   "weekly-status-title", "used-time", "limit-detail", "progress-ring", "today-status",
   "today-detail", "violations-panel", "violations-list", "parent-panel", "session-form",
-  "session-id", "start-date", "start-time", "end-date", "end-time", "session-note", "form-title", "cancel-edit",
+  "session-id", "start-date", "start-time", "end-date", "end-time", "session-note", "session-note-field", "note-toggle", "form-title", "cancel-edit",
   "form-message", "session-submit", "adjustment-form", "adjustment-minutes", "adjustment-submit", "history-list", "session-count",
   "delete-dialog", "confirm-delete", "previous-week", "current-week", "next-week", "period-label",
 ].map((id) => [id, document.getElementById(id)]));
@@ -266,6 +266,7 @@ function beginEdit(session) {
   setDateTimeFields("start", new Date(session.start));
   setDateTimeFields("end", new Date(session.end));
   elements["session-note"].value = session.note ?? "";
+  setNoteEditorOpen(Boolean(session.note));
   elements["form-title"].textContent = "עריכת זמן משחק";
   elements["cancel-edit"].classList.remove("hidden");
   elements["parent-panel"].scrollIntoView({ behavior: "smooth", block: "start" });
@@ -276,6 +277,7 @@ function resetForm() {
   elements["session-id"].value = "";
   elements["form-title"].textContent = "הוספת זמן משחק";
   elements["cancel-edit"].classList.add("hidden");
+  setNoteEditorOpen(false);
   setDefaultTimes();
 }
 
@@ -292,6 +294,18 @@ function setDateTimeFields(prefix, date) {
   elements[`${prefix}-time`].value = toTimeInput(date);
 }
 
+function setQuickTime(prefix, offsetMinutes) {
+  const date = new Date(Date.now() + offsetMinutes * 60000);
+  date.setSeconds(0, 0);
+  setDateTimeFields(prefix, date);
+}
+
+function setNoteEditorOpen(isOpen) {
+  elements["session-note-field"].classList.toggle("hidden", !isOpen);
+  elements["note-toggle"].setAttribute("aria-expanded", String(isOpen));
+  elements["note-toggle"].textContent = isOpen ? "סגירת הערה" : "הערה";
+}
+
 function matchSessionDates(sourcePrefix, targetPrefix) {
   const date = elements[`${sourcePrefix}-date`].value;
   if (date) elements[`${targetPrefix}-date`].value = date;
@@ -302,6 +316,16 @@ function bindEvents() {
   elements["next-week"].addEventListener("click", () => changeWeek(1));
   elements["current-week"].addEventListener("click", selectCurrentWeek);
   if (isParent) {
+    elements["note-toggle"].addEventListener("click", () => {
+      const isOpen = elements["note-toggle"].getAttribute("aria-expanded") === "true";
+      setNoteEditorOpen(!isOpen);
+      if (!isOpen) elements["session-note"].focus();
+    });
+    document.querySelectorAll("[data-time-target]").forEach((button) => {
+      button.addEventListener("click", () => {
+        setQuickTime(button.dataset.timeTarget, Number(button.dataset.offsetMinutes));
+      });
+    });
     elements["start-date"].addEventListener("change", () => matchSessionDates("start", "end"));
     elements["end-date"].addEventListener("change", () => matchSessionDates("end", "start"));
     elements["session-form"].addEventListener("submit", handleSessionSubmit);
